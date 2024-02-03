@@ -1,0 +1,7 @@
+TODO:
+    ☐ basic ping/pong bot
+    ☐ CI/CD for basic bot
+    ☐ Add key-value (distionary)
+    ☐ implement injection
+    ☐ implement quiz
+    // https://docs.python-telegram-bot.org/en/v20.7/examples.conversationbot.html
