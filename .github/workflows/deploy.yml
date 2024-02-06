@@ -18,10 +18,12 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
           script: |
-            pwd
             echo "start"
             export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-            cd word-trainer
+            cd ./word-trainer
+            pwd
             git fetch
             git checkout ${{ github.sha }}
+            docker-compose pull
+            docker-compose up -d
             echo "end"
