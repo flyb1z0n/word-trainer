@@ -1,7 +1,23 @@
 TODO:
-    ☐ basic ping/pong bot
-    ☐ CI/CD for basic bot
+    ✔ basic ping/pong bot @done(24-02-06 17:41)
+    ✔ CI/CD for basic bot @done(24-02-06 17:41)
     ☐ Add key-value (distionary)
+        ☐ Find out how to use SQL lite
+        ☐ Store all incoming message to SQL (just for rest)
+        ☐ Add volume in docke-compose (for storage)
+        ☐ verify ability to query data base from CLI + document it
+        ☐ Store Json for 
+    ☐ Add restriction to respon to my user id only
     ☐ implement injection
+        ☐ try implement graph state in Python telegram bot
+            New Word -> suggestions -> pick (save) or cancel 
+        ☐ Suggestions:
+            ☐ impelemnt translation suggestion thought openAi
+         
+        ☐ validation:
+            ☐ limit 1000 entries in dictionary
+            ☐ no more than 100 chars for word/phase
+            ☐ check for english letters and symbols (by regexp)
+            ☐ add unit test for validation
     ☐ implement quiz
     // https://docs.python-telegram-bot.org/en/v20.7/examples.conversationbot.html
