@@ -1,6 +1,7 @@
 TODO:
     ✔ basic ping/pong bot @done(24-02-06 17:41)
     ✔ CI/CD for basic bot @done(24-02-06 17:41)
+    ✔ replace podman with docker-ce @done(24-02-09 15:44)
     ☐ Add key-value (distionary)
         ☐ Find out how to use SQL lite
         ☐ Store all incoming message to SQL (just for rest)
