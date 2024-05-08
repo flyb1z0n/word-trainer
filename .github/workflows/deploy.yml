@@ -19,7 +19,7 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           script: |
             export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-            export OPENAI_API_KEY=${{ secrets.TELEGRAM_BOT_TOKEN }}
+            export OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             cd ./word-trainer
             git fetch
             git checkout ${{ github.sha }}
