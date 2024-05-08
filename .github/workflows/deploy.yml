@@ -23,5 +23,5 @@ jobs:
             cd ./word-trainer
             git fetch
             git checkout ${{ github.sha }}
-            docker-compose pull
+            docker-compose build
             docker-compose up -d
