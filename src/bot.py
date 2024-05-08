@@ -4,11 +4,14 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Messa
 from dotenv import load_dotenv
 import os
 from config import FlYB1Z0N_USER_ID
+from openai import OpenAI
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+global openAiClient
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
@@ -18,11 +21,39 @@ async def onMessage(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != FlYB1Z0N_USER_ID:
         logging.info("Not allowed user: " + str(update.effective_user.id) + " - " + update.message.text) 
         return
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="RESP: " + update.message.text)
+    
+    response = callOpenAI(update.message.text)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=str(response))
+
+def callOpenAI(text):
+    global openAiClient
+    prompt="""
+    Given text '"""+str(text)+"""', respond with with the following:
+    1. Explain in one sentence(using simple english) what does '"""+str(text)+"""' mean?
+    2. Provide english transcription.
+    3. Translate to russian.
+    4. Give an example of using it in a sentence.
+    Strictly follow the format, split each response with a new line.
+    No further question, just do.
+    """
+
+    completion = openAiClient.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are assistant that helps users to learn new english words."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return completion.choices[0].message.content
+
 
 def main():
+
+    global openAiClient
     load_dotenv(override=True)
     botToken = os.getenv('TELEGRAM_BOT_TOKEN')
+
+    openAiClient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
     application = ApplicationBuilder().token(botToken).build()
     
     start_handler = CommandHandler('start', start)

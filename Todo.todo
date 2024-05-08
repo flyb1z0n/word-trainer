@@ -22,3 +22,7 @@ TODO:
             ☐ add unit test for validation
     ☐ implement quiz
     // https://docs.python-telegram-bot.org/en/v20.7/examples.conversationbot.html
+
+Stack:
+    ☐ investigate lexicala api
+    ☐ other alternatives on https://rapidapi.com/hub
