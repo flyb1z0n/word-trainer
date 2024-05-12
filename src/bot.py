@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 from openai import OpenAI
 
-from src.db import save_message
+from db import save_message
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
