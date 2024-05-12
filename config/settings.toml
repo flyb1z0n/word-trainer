@@ -1,0 +1,8 @@
+[default]
+DB_URL = 'localhost'
+DB_PORT = 27017
+DB_NAME = 'wt_db'
+FlYB1Z0N_USER_ID = 166219758
+
+[production]
+DB_URL = 'mongodb'

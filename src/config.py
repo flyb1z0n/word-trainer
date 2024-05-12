@@ -1,1 +1,10 @@
-FlYB1Z0N_USER_ID = 166219758 
+
+from dynaconf import Dynaconf
+
+settings = Dynaconf(
+    envvar_prefix="DYNACONF",
+    settings_files=['../config/settings.toml'],
+)
+
+# `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
+# `settings_files` = Load these files in the order.
