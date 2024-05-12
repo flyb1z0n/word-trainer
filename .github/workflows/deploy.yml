@@ -20,7 +20,6 @@ jobs:
           script: |
             export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             export OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-            export ENV_FOR_DYNACONF=production
             cd ./word-trainer
             git fetch
             git checkout ${{ github.sha }}
