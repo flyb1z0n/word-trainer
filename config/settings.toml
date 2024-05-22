@@ -4,7 +4,7 @@ DB_PORT = 27017
 DB_NAME = 'wt_db'
 # make it list of user ids
 FlYB1Z0N_USER_ID = 166219758
-JANE_USER_ID = 166219758
+JANE_USER_ID = 390885313
 
 [production]
 DB_URL = 'mongodb'
