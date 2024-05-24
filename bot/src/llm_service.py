@@ -15,6 +15,9 @@ class WordCard:
     def to_message(self) -> str:
         return f"*{self.text}* _(/{self.transcription}/)_ - {self.explanation.lower()} \n\n_Example: {self.example}_"
 
+    def to_message_with_translation(self) -> str:
+        return f"*{self.text}* _(/{self.transcription}/)_ - {self.explanation.lower()} \n\n_Example: {self.example}_\n\nTranslation: {self.translation}"
+
 
 class LlmService:
 

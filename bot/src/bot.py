@@ -39,7 +39,7 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    )
 
 
-async def on_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     text = update.callback_query.data.split(" ")[1]
@@ -52,13 +52,28 @@ async def on_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-def build_keyboard(text):
-    keyboard = [
-        [
-            InlineKeyboardButton("Refresh", callback_data=str("refresh " + text)),
-        ]
+async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    text = update.callback_query.data.split(" ")[1]
+    response = llm_service.get_text_card(text)
+    reply_markup = build_keyboard(text, add_translate=False)
+    await query.edit_message_text(
+        text=response.to_message_with_translation(),
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+
+def build_keyboard(text, add_translate=True):
+    buttons = [
+        InlineKeyboardButton("Refresh", callback_data=str("refresh " + text)),
     ]
-    return InlineKeyboardMarkup(keyboard)
+
+    if add_translate:
+        buttons.append(InlineKeyboardButton("Translate", callback_data=str("translate " + text)))
+
+    return InlineKeyboardMarkup([buttons])
 
 
 def main():
@@ -72,11 +87,10 @@ def main():
 
     start_handler = CommandHandler('start', start)
     chat_handler = MessageHandler(None, on_message)
-    refresh_handler = CallbackQueryHandler(on_callback_query, "^refresh .*")
-
     application.add_handler(start_handler)
     application.add_handler(chat_handler)
-    application.add_handler(refresh_handler)
+    application.add_handler(CallbackQueryHandler(on_refresh, "^refresh .*"))
+    application.add_handler(CallbackQueryHandler(on_translate, "^translate .*"))
 
     application.run_polling()
 
