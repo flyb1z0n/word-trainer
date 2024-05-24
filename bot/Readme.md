@@ -1,8 +1,11 @@
-# Dev:
+# Development :
 
 ## Setup virtual env
 
 ### For Windows
+```
+sdasd
+```
 `python -m venv venv`
 
 

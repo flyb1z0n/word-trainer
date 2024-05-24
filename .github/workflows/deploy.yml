@@ -23,5 +23,6 @@ jobs:
             cd ./word-trainer
             git fetch
             git checkout ${{ github.sha }}
+            cd ./bot
             docker-compose build
             docker-compose up -d

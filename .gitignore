@@ -1,0 +1,9 @@
+.DS_Store
+.idea
+.vscode
+*.code-workspace
+venv
+*.pyc
+__pycache__
+*.iml
+.env
