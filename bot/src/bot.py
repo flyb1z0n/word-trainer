@@ -23,12 +23,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    save_message(update.message.to_dict())
     # Only allow messages from the allowed user
     if update.effective_user.id != settings.FlYB1Z0N_USER_ID and update.effective_user.id != settings.JANE_USER_ID:
         logging.info("Not allowed user: " + str(update.effective_user.id) + " - " + update.message.text)
         return
 
-    save_message(update.message.to_dict())
     text = update.message.text
     response = llm_service.get_text_card(text)
 
