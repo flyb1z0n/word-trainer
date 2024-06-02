@@ -70,11 +70,11 @@ async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def build_keyboard(card_id: str, add_translate=True):
     buttons = [
-        InlineKeyboardButton("Refresh", callback_data=str("refresh " + card_id)),
+        InlineKeyboardButton("\U0001F504 Refresh", callback_data=str("refresh " + card_id)),
     ]
 
     if add_translate:
-        buttons.append(InlineKeyboardButton("Translate", callback_data=str("translate " + card_id)))
+        buttons.append(InlineKeyboardButton("\U0001F4D6 Translate", callback_data=str("translate " + card_id)))
 
     return InlineKeyboardMarkup([buttons])
 
