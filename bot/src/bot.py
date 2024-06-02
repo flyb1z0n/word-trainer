@@ -7,7 +7,7 @@ from openai import OpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler
 
-from db import save_message
+from db import save_message, save_word_card, get_word_card
 from llm_service import LlmService
 
 logging.basicConfig(
@@ -31,47 +31,50 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     text = update.message.text
     response = llm_service.get_text_card(text)
+    card_id, _ = save_word_card(str(update.effective_user.id), response)
 
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=response.to_message(),
                                    parse_mode='Markdown',
-                                   reply_markup=build_keyboard(text)
+                                   reply_markup=build_keyboard(card_id)
                                    )
 
 
 async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    text = update.callback_query.data.split(" ")[1]
+    prev_card_id = update.callback_query.data.split(" ")[1]
+    text = get_word_card(str(update.effective_user.id), prev_card_id).text
     response = llm_service.get_text_card(text)
-    reply_markup = build_keyboard(text)
+    card_id, _ = save_word_card(str(update.effective_user.id), response)
+
     await query.edit_message_text(
         text=response.to_message(),
         parse_mode='Markdown',
-        reply_markup=reply_markup
+        reply_markup=build_keyboard(card_id)
     )
 
 
 async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    text = update.callback_query.data.split(" ")[1]
-    response = llm_service.get_text_card(text)
-    reply_markup = build_keyboard(text, add_translate=False)
+    card_id = update.callback_query.data.split(" ")[1]
+    word_card = get_word_card(str(update.effective_user.id), card_id)
+    reply_markup = build_keyboard(card_id, add_translate=False)
     await query.edit_message_text(
-        text=response.to_message_with_translation(),
+        text=word_card.to_message_with_translation(),
         parse_mode='Markdown',
         reply_markup=reply_markup
     )
 
 
-def build_keyboard(text, add_translate=True):
+def build_keyboard(card_id: str, add_translate=True):
     buttons = [
-        InlineKeyboardButton("Refresh", callback_data=str("refresh " + text)),
+        InlineKeyboardButton("Refresh", callback_data=str("refresh " + card_id)),
     ]
 
     if add_translate:
-        buttons.append(InlineKeyboardButton("Translate", callback_data=str("translate " + text)))
+        buttons.append(InlineKeyboardButton("Translate", callback_data=str("translate " + card_id)))
 
     return InlineKeyboardMarkup([buttons])
 
