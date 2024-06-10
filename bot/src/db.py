@@ -18,10 +18,12 @@ class ActionDataType(Enum):
 
 
 def _message_collection():
+    # Store the data for inlined actions
     return db['tg_messages']
 
 
 def _action_data():
+    # Store the data for inlined actions
     return db['user_message_action_data']
 
 
