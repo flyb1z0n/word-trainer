@@ -8,6 +8,7 @@ from dynaconf import settings
 from pymongo import MongoClient
 
 from model.flashcard import Flashcard
+from util import timed
 
 client = MongoClient(settings.DB_URL, settings.DB_PORT)
 db = client[settings.DB_NAME]
@@ -32,6 +33,7 @@ def _flashcards():
     return db['user_flashcards']
 
 
+@timed
 def save_user_flashcard(user_id: str, flashcard: Flashcard):
     flashcard_entry = dict()
     flashcard_entry['_id'] = str(uuid.uuid4())
@@ -41,7 +43,7 @@ def save_user_flashcard(user_id: str, flashcard: Flashcard):
     insert_result = _flashcards().insert_one(flashcard_entry)
     return insert_result.inserted_id
 
-
+@timed
 def delete_user_flashcard(user_id: str, card_id: str):
     _flashcards().delete_one({'user_id': user_id, '_id': card_id})
 
@@ -49,7 +51,7 @@ def delete_user_flashcard(user_id: str, card_id: str):
 def save_message(message):
     _message_collection().insert_one(message)
 
-
+@timed
 def save_flashcard_action_data(user_id: str, flashcard: Flashcard, ui_state=None) -> Tuple[str, Flashcard, dict]:
     action_data_entry = dict()
     action_data_entry['user_id'] = user_id
@@ -63,10 +65,12 @@ def save_flashcard_action_data(user_id: str, flashcard: Flashcard, ui_state=None
     return insert_result.inserted_id, flashcard, action_data_entry['data']['ui_state']
 
 
+@timed
 def update_flashcard_action_data_ui_state(user_id: str, card_id: str, ui_state: dict):
     _action_data().update_one({'user_id': user_id, '_id': card_id}, {'$set': {'data.ui_state': ui_state}})
 
 
+@timed
 def get_flashcard_action_data(user_id: str, card_id: str) -> dict:
     action_data_dict = _action_data().find_one({'user_id': user_id, '_id': card_id})
     action_data_dict['data']['flashcard'] = Flashcard(**action_data_dict['data']['flashcard'])
