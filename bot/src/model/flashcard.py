@@ -9,8 +9,8 @@ class Flashcard:
     translation: str
     example: str
 
-    def to_message(self) -> str:
-        return f"*{self.text}* _(/{self.transcription}/)_ - {self.explanation.lower()} \n\n_Example: {self.example}_"
-
-    def to_message_with_translation(self) -> str:
-        return f"*{self.text}* _(/{self.transcription}/)_ - {self.explanation.lower()} \n\n_Example: {self.example}_\n\nTranslation: {self.translation}"
+    def to_message(self, ui_state: dict) -> str:
+        message = f"*{self.text}* _(/{self.transcription}/)_ - {self.explanation.lower()} \n\n_Example: {self.example}_"
+        if ui_state.get('translation_shown', False):
+            message += f"\n\nTranslation: {self.translation}"
+        return message
