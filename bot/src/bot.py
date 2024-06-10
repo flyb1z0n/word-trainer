@@ -7,7 +7,7 @@ from openai import OpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler
 
-from db import save_message, save_word_card, get_word_card
+from db import save_message, save_flashcard_action_data, get_flashcard_action_data
 from llm_service import LlmService
 
 logging.basicConfig(
@@ -31,7 +31,7 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     text = update.message.text
     response = llm_service.get_text_card(text)
-    card_id, _ = save_word_card(str(update.effective_user.id), response)
+    card_id, _ = save_flashcard_action_data(str(update.effective_user.id), response)
 
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=response.to_message(),
@@ -44,9 +44,9 @@ async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     prev_card_id = update.callback_query.data.split(" ")[1]
-    text = get_word_card(str(update.effective_user.id), prev_card_id).text
+    text = get_flashcard_action_data(str(update.effective_user.id), prev_card_id).text
     response = llm_service.get_text_card(text)
-    card_id, _ = save_word_card(str(update.effective_user.id), response)
+    card_id, _ = save_flashcard_action_data(str(update.effective_user.id), response)
 
     await query.edit_message_text(
         text=response.to_message(),
@@ -59,7 +59,7 @@ async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     card_id = update.callback_query.data.split(" ")[1]
-    word_card = get_word_card(str(update.effective_user.id), card_id)
+    word_card = get_flashcard_action_data(str(update.effective_user.id), card_id)
     reply_markup = build_keyboard(card_id, add_translate=False)
     await query.edit_message_text(
         text=word_card.to_message_with_translation(),
