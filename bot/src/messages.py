@@ -11,3 +11,7 @@ WELCOME_MESSAGE = """🎉 Welcome to @WordMentorBot! 🎉
 Learn new English words easily! Just send any English word to the bot, and you'll get a simple explanation and practice exercises.
     
 Ready to start? 🚀"""
+
+TEXT_IS_TOO_BIG = "Sorry but your text is too big. Please try again with a shorter text."
+
+DICTIONARY_SIZE_LIMIT_REACHED = "You've reached the limit of saved words. Please remove some words to add new ones."

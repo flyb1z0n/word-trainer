@@ -7,8 +7,8 @@ from dynaconf import settings
 from openai import OpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
-import messages
 
+import messages
 from db import (save_message, save_flashcard_action_data, get_flashcard_action_data,
                 update_flashcard_action_data_ui_state, save_user_flashcard, delete_user_flashcard, get_user_flashcards)
 from llm_service import LlmService
@@ -42,20 +42,26 @@ class Commands(Enum):
 
 def allowed_user_decorator(func):
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        save_message(update.message.to_dict())
+        if update.message is not None:
+            save_message(update.message.to_dict())
         # Only allow messages from the allowed user list
         if update.effective_user.id not in settings.ALLOWED_USERS:
             logging.info("Not allowed user: " + str(update.effective_user.id) + " - " + update.message.text)
-            await context.bot.send_message(chat_id=update.effective_chat.id, text=messages.USER_IS_NOT_IN_ALLOWED_LIST, parse_mode='Markdown')
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=messages.USER_IS_NOT_IN_ALLOWED_LIST,
+                                           parse_mode='Markdown')
             return
         return await func(update, context)
+
     return wrapper
 
 
+@allowed_user_decorator
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='Markdown', text=messages.WELCOME_MESSAGE)
+    await context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='Markdown',
+                                   text=messages.WELCOME_MESSAGE)
 
 
+@allowed_user_decorator
 async def show_dictionary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     saved_flashcards = get_user_flashcards(user_id)
@@ -73,10 +79,16 @@ async def show_dictionary(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    text=message)
 
 
+def is_text_too_big(text: str) -> bool:
+    return len(text) >= settings.MAX_TEXT_SIZE
+
+
 @allowed_user_decorator
 async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
-    # TODO: add validation for the text size.
+    if is_text_too_big(text):
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=messages.TEXT_IS_TOO_BIG)
+        return
     response = llm_service.get_flashcard(text)
     card_id, _, ui_state = save_flashcard_action_data(str(update.effective_user.id), response)
 
@@ -85,6 +97,7 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    parse_mode='Markdown',
                                    reply_markup=build_keyboard(card_id, ui_state)
                                    )
+
 
 @allowed_user_decorator
 async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -121,15 +134,25 @@ async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+def dictionary_has_reached_limit(user_id: str):
+    return len(get_user_flashcards(user_id)) >= settings.MAX_DICTIONARY_SIZE
+
+
 @allowed_user_decorator
 async def on_save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    if dictionary_has_reached_limit(str(update.effective_user.id)):
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=messages.DICTIONARY_SIZE_LIMIT_REACHED,
+            parse_mode='Markdown',
+        )
+        return
     card_id = update.callback_query.data.split(" ")[1]
     action_data = get_flashcard_action_data(str(update.effective_user.id), card_id)
     flashcard = action_data['data']['flashcard']
     ui_state = action_data['data']['ui_state']
-    # TODO add validation (size,
     flashcard_id = save_user_flashcard(str(update.effective_user.id), flashcard)
     ui_state['saved_flash_card_id'] = flashcard_id
     update_flashcard_action_data_ui_state(str(update.effective_user.id), card_id, ui_state)
