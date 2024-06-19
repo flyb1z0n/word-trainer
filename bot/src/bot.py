@@ -9,8 +9,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
 from db import (save_message, save_flashcard_action_data, get_flashcard_action_data,
-                update_flashcard_action_data_ui_state, save_user_flashcard, delete_user_flashcard)
+                update_flashcard_action_data_ui_state, save_user_flashcard, delete_user_flashcard, get_user_flashcards)
 from llm_service import LlmService
+from model.flashcard import Flashcard
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -33,8 +34,30 @@ class Actions(Enum):
         return f"^{self.value} .*"
 
 
+class Commands(Enum):
+    START = 'start'
+    DICTIONARY = 'dictionary'
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+
+
+async def show_dictionary(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(update.effective_user.id)
+    saved_flashcards = get_user_flashcards(user_id)
+    if not saved_flashcards:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="You don't have any saved flashcards.")
+        return
+
+    message = "Last 10 saved words:\n\n"
+    for idx, entry in enumerate(saved_flashcards[:10]):
+        flashcard = Flashcard(**entry['flashcard'])
+        message += str(idx + 1) + ". " + flashcard.text + "\n\n"
+
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   parse_mode='Markdown',
+                                   text=message)
 
 
 async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -63,7 +86,8 @@ async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     action_data = get_flashcard_action_data(str(update.effective_user.id), prev_card_id)
     text = action_data['data']['flashcard'].text
     response = llm_service.get_flashcard(text)
-    card_id, _, ui_state = save_flashcard_action_data(str(update.effective_user.id), response, action_data['data']['ui_state'])
+    card_id, _, ui_state = save_flashcard_action_data(str(update.effective_user.id), response,
+                                                      action_data['data']['ui_state'])
 
     await query.edit_message_text(
         text=response.to_message(ui_state),
@@ -153,9 +177,11 @@ def main():
     llm_service = LlmService(open_ai_client)
     application = ApplicationBuilder().token(bot_token).build()
 
-    start_handler = CommandHandler('start', start)
+    start_handler = CommandHandler(Commands.START.value, start)
+    saved_cards_handler = CommandHandler(Commands.DICTIONARY.value, show_dictionary)
     chat_handler = MessageHandler(filters.TEXT, on_message)
     application.add_handler(start_handler)
+    application.add_handler(saved_cards_handler)
     application.add_handler(chat_handler)
     application.add_handler(CallbackQueryHandler(on_refresh, Actions.REFRESH.pattern()))
     application.add_handler(CallbackQueryHandler(on_translate, Actions.TRANSLATE.pattern()))

@@ -43,6 +43,10 @@ def save_user_flashcard(user_id: str, flashcard: Flashcard):
     insert_result = _flashcards().insert_one(flashcard_entry)
     return insert_result.inserted_id
 
+
+def get_user_flashcards(user_id: str) -> list:
+    return list(_flashcards().find({'user_id': user_id}).sort('created_at', -1))
+
 @timed
 def delete_user_flashcard(user_id: str, card_id: str):
     _flashcards().delete_one({'user_id': user_id, '_id': card_id})
