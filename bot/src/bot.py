@@ -7,6 +7,7 @@ from dynaconf import settings
 from openai import OpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
+import messages
 
 from db import (save_message, save_flashcard_action_data, get_flashcard_action_data,
                 update_flashcard_action_data_ui_state, save_user_flashcard, delete_user_flashcard, get_user_flashcards)
@@ -39,13 +40,20 @@ class Commands(Enum):
     DICTIONARY = 'dictionary'
 
 
+def allowed_user_decorator(func):
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        save_message(update.message.to_dict())
+        # Only allow messages from the allowed user list
+        if update.effective_user.id not in settings.ALLOWED_USERS:
+            logging.info("Not allowed user: " + str(update.effective_user.id) + " - " + update.message.text)
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=messages.USER_IS_NOT_IN_ALLOWED_LIST, parse_mode='Markdown')
+            return
+        return await func(update, context)
+    return wrapper
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    invitation_message = """🎉 Welcome to @WordMentorBot! 🎉 
-    
-Learn new English words easily! Just send any English word to the bot, and you'll get a simple explanation and practice exercises.
-    
-Ready to start? 🚀"""
-    await context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='Markdown', text=invitation_message)
+    await context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='Markdown', text=messages.WELCOME_MESSAGE)
 
 
 async def show_dictionary(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -65,13 +73,8 @@ async def show_dictionary(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    text=message)
 
 
+@allowed_user_decorator
 async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    save_message(update.message.to_dict())
-    # Only allow messages from the allowed user
-    if update.effective_user.id != settings.FlYB1Z0N_USER_ID and update.effective_user.id != settings.JANE_USER_ID:
-        logging.info("Not allowed user: " + str(update.effective_user.id) + " - " + update.message.text)
-        return
-
     text = update.message.text
     # TODO: add validation for the text size.
     response = llm_service.get_flashcard(text)
@@ -83,7 +86,7 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    reply_markup=build_keyboard(card_id, ui_state)
                                    )
 
-
+@allowed_user_decorator
 async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -101,6 +104,7 @@ async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+@allowed_user_decorator
 async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -117,6 +121,7 @@ async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+@allowed_user_decorator
 async def on_save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -135,6 +140,7 @@ async def on_save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+@allowed_user_decorator
 async def on_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
