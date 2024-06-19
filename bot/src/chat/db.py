@@ -7,7 +7,7 @@ from typing import Tuple
 from dynaconf import settings
 from pymongo import MongoClient
 
-from chat.util import timed
+from common.util import timed
 from model.flashcard import Flashcard
 
 
