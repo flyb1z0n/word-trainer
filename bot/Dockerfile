@@ -11,4 +11,5 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run bot.py when the container launches
+SET PYTHONPATH /usr/src/app/src
 CMD ["python", "./src/bot.py"]

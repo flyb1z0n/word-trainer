@@ -7,8 +7,9 @@ from typing import Tuple
 from dynaconf import settings
 from pymongo import MongoClient
 
+from chat.util import timed
 from model.flashcard import Flashcard
-from util import timed
+
 
 client = MongoClient(settings.DB_URL, settings.DB_PORT)
 db = client[settings.DB_NAME]

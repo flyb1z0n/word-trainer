@@ -8,10 +8,11 @@ from openai import OpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
-import messages
-from db import (save_message, save_flashcard_action_data, get_flashcard_action_data,
+import chat.messages as messages
+from handlers.common import allowed_user_decorator
+from chat.db import (save_flashcard_action_data, get_flashcard_action_data,
                 update_flashcard_action_data_ui_state, save_user_flashcard, delete_user_flashcard, get_user_flashcards)
-from llm_service import LlmService
+from chat.llm_service import LlmService
 from model.flashcard import Flashcard
 
 logging.basicConfig(
@@ -39,20 +40,6 @@ class Commands(Enum):
     START = 'start'
     DICTIONARY = 'dictionary'
 
-
-def allowed_user_decorator(func):
-    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        if update.message is not None:
-            save_message(update.message.to_dict())
-        # Only allow messages from the allowed user list
-        if update.effective_user.id not in settings.ALLOWED_USERS:
-            logging.info("Not allowed user: " + str(update.effective_user.id) + " - " + update.message.text)
-            await context.bot.send_message(chat_id=update.effective_chat.id, text=messages.USER_IS_NOT_IN_ALLOWED_LIST,
-                                           parse_mode='Markdown')
-            return
-        return await func(update, context)
-
-    return wrapper
 
 
 @allowed_user_decorator
@@ -103,6 +90,7 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+
     prev_card_id = update.callback_query.data.split(" ")[1]
     action_data = get_flashcard_action_data(str(update.effective_user.id), prev_card_id)
     text = action_data['data']['flashcard'].text
@@ -121,6 +109,7 @@ async def on_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def on_translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+
     card_id = update.callback_query.data.split(" ")[1]
     action_data = get_flashcard_action_data(str(update.effective_user.id), card_id)
     flashcard = action_data['data']['flashcard']

@@ -1,8 +1,8 @@
 import json
 from openai import OpenAI
 
-from util import timed
-from prompts import TRANSLATION_PROMPT
+from chat.util import timed
+from chat.prompts import TRANSLATION_PROMPT
 from model.flashcard import Flashcard
 
 
