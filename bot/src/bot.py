@@ -40,14 +40,19 @@ class Commands(Enum):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+    invitation_message = """🎉 Welcome to @WordMentorBot! 🎉 
+    
+Learn new English words easily! Just send any English word to the bot, and you'll get a simple explanation and practice exercises.
+    
+Ready to start? 🚀"""
+    await context.bot.send_message(chat_id=update.effective_chat.id, parse_mode='Markdown', text=invitation_message)
 
 
 async def show_dictionary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     saved_flashcards = get_user_flashcards(user_id)
     if not saved_flashcards:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="You don't have any saved flashcards.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="You don't have any saved words.")
         return
 
     message = "Last 10 saved words:\n\n"
