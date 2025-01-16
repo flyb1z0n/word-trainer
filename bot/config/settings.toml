@@ -5,7 +5,8 @@ DB_NAME = 'wt_db'
 # make it list of user ids
 # flyb1z0n = 166219758
 # jane = 390885313
-ALLOWED_USERS = [166219758, 390885313]
+# daniel = 5195314495
+ALLOWED_USERS = [166219758, 390885313, 5195314495]
 MAX_TEXT_SIZE = 100 #symbols
 MAX_DICTIONARY_SIZE = 2000 #words
 [production]
