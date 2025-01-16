@@ -55,3 +55,11 @@
 
 ## Connect to mongo locally:
 `docker exec -it bot-mongodb-1 mongosh`
+
+`show dbs`
+
+`use wt_db`
+
+`show collections`
+
+`db.tg_messages.find({ "chat.username": { $ne: "flyb1z0n" } })`
