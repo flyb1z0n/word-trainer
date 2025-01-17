@@ -13,7 +13,7 @@ def allowed_user_decorator(func):
         if update.message is not None:
             save_message(update.message.to_dict())
         # Only allow messages from the allowed user list
-        if update.effective_user.id not in settings.ALLOWED_USERS:
+        if str(update.effective_user.id) not in settings.ALLOWED_USERS:
             logging.info("Not allowed user: " + str(update.effective_user.id))
             await context.bot.send_message(chat_id=update.effective_chat.id, text=messages.USER_IS_NOT_IN_ALLOWED_LIST,
                                            parse_mode='Markdown')
