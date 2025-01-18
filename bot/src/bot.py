@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from dynaconf import settings
 from openai import OpenAI
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
+from telegram.ext import Application, ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
 import chat.messages as messages
 from handlers.common import allowed_user_decorator
@@ -14,6 +14,7 @@ from chat.db import (save_flashcard_action_data, get_flashcard_action_data,
                 update_flashcard_action_data_ui_state, save_user_flashcard, delete_user_flashcard, get_user_flashcards)
 from chat.llm_service import LlmService
 from model.flashcard import Flashcard
+from dynaconf import settings
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -190,6 +191,13 @@ def build_keyboard(card_id: str, ui_state: dict):
 
     return InlineKeyboardMarkup([buttons])
 
+async def send_startup_message(application: Application) -> None:
+    chat_id = settings.OWNER_USER_ID
+    commit_hash = os.getenv("COMMIT_HASH", "unknown")
+    message = "Bot has started! CommitHash:" + commit_hash
+    await application.bot.send_message(chat_id=chat_id, text=message)
+
+
 
 def main():
     global llm_service
@@ -198,7 +206,7 @@ def main():
 
     open_ai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
     llm_service = LlmService(open_ai_client)
-    application = ApplicationBuilder().token(bot_token).build()
+    application = ApplicationBuilder().token(bot_token).post_init(send_startup_message).build()
 
     start_handler = CommandHandler(Commands.START.value, start)
     saved_cards_handler = CommandHandler(Commands.DICTIONARY.value, show_dictionary)
@@ -210,6 +218,7 @@ def main():
     application.add_handler(CallbackQueryHandler(on_translate, Actions.TRANSLATE.pattern()))
     application.add_handler(CallbackQueryHandler(on_save, Actions.SAVE.pattern()))
     application.add_handler(CallbackQueryHandler(on_remove, Actions.REMOVE.pattern()))
+    
     application.run_polling()
 
 

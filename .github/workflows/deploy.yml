@@ -25,5 +25,5 @@ jobs:
             git checkout ${{ github.sha }}
             cd ./bot
             docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password "${{ secrets.DOCKERHUB_TOKEN }}"
-            docker-compose build
+            docker-compose build --build-arg COMMIT_HASH=${{ github.sha }}
             docker-compose up -d

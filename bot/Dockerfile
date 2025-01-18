@@ -10,6 +10,10 @@ COPY . .
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pass the commit hash as a build-time argument
+ARG COMMIT_HASH
+ENV COMMIT_HASH=${COMMIT_HASH}
+
 # Run bot.py when the container launches
 ENV PYTHONPATH="/usr/src/app/src"
 CMD ["python", "./src/bot.py"]
