@@ -4,6 +4,7 @@ TRANSLATION_PROMPT = """
     2. Provide english transcription.
     3. Translate to russian.
     4. Give an example of using it in a sentence.
+    5. Fix the requested text if you spot any mistakes (and case as well)
      Respond with the following json format:
     {{
         "explanation": <explanation>,
