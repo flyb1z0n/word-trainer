@@ -14,7 +14,7 @@ class LlmService:
     @timed
     def get_flashcard(self, text: str) -> Flashcard:
         completion = self.open_ai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": "You are assistant that helps users to learn new english words."},
