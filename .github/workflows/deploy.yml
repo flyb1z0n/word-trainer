@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
           source: "site/dist/*"
-          target: "/home/${{ secrets.SERVER_USER }}/site/dist"
+          target: "/home/${{ secrets.SERVER_USER }}"
 
       - name: Copy Dockerfile to server
         uses: appleboy/scp-action@v0.1.1
