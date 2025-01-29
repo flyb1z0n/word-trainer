@@ -10,6 +10,10 @@ jobs:
   deploy-bot:
     runs-on: ubuntu-latest
     steps:
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.4
         with:
@@ -24,7 +28,7 @@ jobs:
             git checkout ${{ github.sha }}
             cd ./bot
             docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password "${{ secrets.DOCKERHUB_TOKEN }}"
-            docker-compose build --build-arg COMMIT_HASH=${{ github.sha }}
+            docker-compose build --build-arg COMMIT_HASH=${{ steps.vars.outputs.sha_short }}
             docker-compose up -d
   deploy-site:
     runs-on: ubuntu-latest
@@ -36,14 +40,14 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "20"
-      - name: Change directory
-        run: cd site
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./site
 
       - name: Build the site
         run: npm run build
+        working-directory: ./site
 
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.1
@@ -51,7 +55,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
-          source: "dist/*"
+          source: "site/dist/*"
           target: "/home/${{ secrets.SERVER_USER }}/site/dist"
 
       - name: Copy Dockerfile to server
@@ -60,7 +64,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
-          source: "Dockerfile"
+          source: "site/Dockerfile"
           target: "/home/${{ secrets.SERVER_USER }}/site"
 
       - name: Deploy to server
